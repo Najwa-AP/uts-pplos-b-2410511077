@@ -1,0 +1,28 @@
+{
+  "name": "uts-pplos-b-2410511077",
+  "version": "1.0.0",
+  "description": "UTS SE KELAS B SEMESTER 4",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Najwa-AP/uts-pplos-b-2410511077.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Najwa-AP/uts-pplos-b-2410511077/issues"
+  },
+  "homepage": "https://github.com/Najwa-AP/uts-pplos-b-2410511077#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "http-proxy-middleware": "^3.0.5",
+    "passport-github2": "^0.1.12"
+  }
+}
