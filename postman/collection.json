@@ -1,0 +1,55 @@
+{
+  "info": {
+    "_postman_id": "40ff554d-0160-4d43-af12-a6acbddff0c0",
+    "name": "Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54378267",
+    "_collection_link": "https://go.postman.co/collection/54378267-40ff554d-0160-4d43-af12-a6acbddff0c0?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "http://localhost:4000/auth",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:4000/auth",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "auth"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/complaints",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:4000/complaints",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "complaints"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
