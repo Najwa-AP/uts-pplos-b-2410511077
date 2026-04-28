@@ -21,8 +21,11 @@
   },
   "homepage": "https://github.com/Najwa-AP/uts-pplos-b-2410511077#readme",
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "http-proxy-middleware": "^3.0.5",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.22.3",
     "passport-github2": "^0.1.12"
   }
 }
