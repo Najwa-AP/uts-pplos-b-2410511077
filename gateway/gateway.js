@@ -9,7 +9,7 @@ app.use('/auth', createProxyMiddleware ({
     target: 'http://localhost:4001',
     changeOrigin: true,
     pathRewrite: {
-        '^/auth-service': '',
+        '^/auth': '',
     },
 }));
 
@@ -24,7 +24,7 @@ app.use('/logs', createProxyMiddleware ({
     target: 'http://localhost:4003',
     changeOrigin: true,
     pathRewrite: {
-        '^/service3': '',
+        '^/logs': '',
     },
 }));
 

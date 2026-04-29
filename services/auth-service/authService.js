@@ -5,6 +5,7 @@ import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import mysql from 'mysql2';
 import config from './config.js';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 const port = config.port;
@@ -37,10 +38,14 @@ passport.use(new GitHubStrategy({
 },
 (accessToken, refreshToken, profile, done) => {
     // data yg diambil dari profile github
-    const { id, username, displayName, emails, _json } = profile;
-    const email = emails[0].value; // github kadang gk send email jika di-private
-    const foto = _json.avatar_url;
-        
+    const email = (profile.emails && profile.emails.length > 0) 
+        ? profile.emails[0].value
+        : `${profile.username}@github.com`; // github kadang gk send email jika di-private
+    const foto = (profile._json && profile._json.avatar_url)
+        ? profile._json.avatar_url 
+        : null;
+    const { id, username, displayName } = profile;
+    
     // cek apakah user udah ada di dalam tabel users
     db.query('SELECT * FROM users WHERE github_id = ?', [id], (err, results) => {
         if (err) return done(err);
@@ -49,8 +54,8 @@ passport.use(new GitHubStrategy({
             return done(null, results[0]);
         } else {
             // buat user baru jika belum ada
-            db.query('INSERT INTO users (nama, username, email, github_id, profile_pic) VALUES (?, ?, ?, ?, ?)',
-                [displayName || username, username, email, id, foto],
+            db.query('INSERT INTO users (nama, username, email, github_id, profile_pic, oauth_provider) VALUES (?, ?, ?, ?, ?, ?)',
+                [displayName || username, username, email, id, foto, 'github'],
                 (err, result) => {
                     if (err) return done(err);
                     db.query('SELECT * FROM users WHERE id = ?', [result.insertId], (err, user) => {
@@ -68,17 +73,17 @@ app.get('/', (req, res) => {
 });
 
 // route untuk login pake github
-app.get('/auth/github', 
+app.get('/github', 
     passport.authenticate('github', { 
         scope: ['user:email']
 }));
 
 // callback route setelah login github berhasil
-app.get('/auth/github/callback', 
+app.get('/github/callback', 
     passport.authenticate('github', { 
         failureRedirect: '/' }),
     (req, res) => {
-        res.redirect('/profile');
+        res.redirect('/auth/profile');
     }
 );
 
@@ -102,7 +107,7 @@ app.get('/profile', (req, res) => {
     }
 });
 
-// route logout dan (hapus session user) <= pengannya ini juga bisa
+// route logout dan (hapus session user) <= pengennya ini juga bisa
 app.get('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) return next(err);
