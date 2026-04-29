@@ -13,6 +13,20 @@ const port = config.port;
 // inisialisasi koneksi ke database
 const db = mysql.createConnection(config.db);
 
+const generateTokens = (user) => {
+    const accessToken = jwt.sign(
+        { id: user.id, username: user.username },
+        process.env.JWT_ACCESS_SECRET,
+        { expiresIn: '15m' }
+    );
+    const refreshToken = jwt.sign(
+        { id: user.id },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: '7d' }
+    );
+    return { accessToken, refreshToken };
+};
+
 db.connect((err) => {
     if (err) {
         console.error("Gagal terhubung ke database, ", err.message);
@@ -20,7 +34,27 @@ db.connect((err) => {
     console.log("Berhasil terhubung ke db_auth");
 });
 
-// middleware
+// middleware jwt
+const authenticateToken = (req, res, next) => {
+    // ambil header authorization
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: "Token tidak ditemukan" });
+    }
+
+    // verifikasi token pakai secret key
+    jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: "Token tidak valid" });
+        }
+
+        req.user = user;
+        next();
+    });
+}
+
 app.use(session ({
     secret: config.sessionSecret,
     resave: false,
@@ -81,11 +115,43 @@ app.get('/github',
 // callback route setelah login github berhasil
 app.get('/github/callback', 
     passport.authenticate('github', { 
-        failureRedirect: '/' }),
+        failureRedirect: '/auth'}),
     (req, res) => {
-        res.redirect('/auth/profile');
+        const { accessToken, refreshToken } = generateTokens(req.user);
+        
+        res.json({
+            status: "Success",
+            access_token: accessToken,
+            refresh_token: refreshToken
+        });
     }
 );
+
+// route buat refresh token
+app.post('/refresh-token', (req, res) => { 
+    const { token } = req.body;
+    if (!token) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+
+        // buat access token baru
+        const accessToken = jwt.sign(
+            { id: user.id, username: decoded.username },
+            process.env.JWT_ACCESS_SECRET,
+            { expiresIn: '15m' }
+        );
+        res.json({ access_token: accessToken });
+    });
+});
+
+// route buat lihat hasil login
+app.get('/profile', authenticateToken, (req, res) => {
+    res.json({
+            message: "Anda berhasil login dengan JWT",
+            user: req.user
+    });
+});
 
 // serialize & deserialize user
 passport.serializeUser((user, done) => done(null, user.id)); 
@@ -93,18 +159,6 @@ passport.deserializeUser((id, done) => {
     db.query('SELECT * FROM users WHERE id = ?', [id], (err, results) => {
         done(err, results[0]);
     });
-});
-
-// route buat lihat hasil login
-app.get('/profile', (req, res) => {
-    if (req.isAuthenticated()) {
-        res.json({
-            message: "Anda berhasil login",
-            user: req.user
-        });
-    } else {
-        res.status(401).json({ message: "Silahkan login terlebih dahulu" });
-    }
 });
 
 // route logout dan (hapus session user) <= pengennya ini juga bisa
