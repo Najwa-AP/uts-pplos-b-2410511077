@@ -7,6 +7,7 @@ import mysql from 'mysql2';
 import config from './config.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { body, validationResult } from 'express-validator';
 
 const app = express();
 const port = config.port;
@@ -30,7 +31,9 @@ const generateTokens = (user) => {
 
 db.connect((err) => {
     if (err) {
-        console.error("Gagal terhubung ke database, ", err.message);
+        console.error(
+            "Gagal terhubung ke database, ", err.message);
+            process.exit(1);
     }
     console.log("Berhasil terhubung ke db_auth");
 });
@@ -81,6 +84,22 @@ passport.use(new GitHubStrategy({
     });        
 }));
 
+// buat validasi input
+const validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            status: "error",
+            message: "Validasi gagal",
+            errors: errors.array().map(err => ({ 
+                field: err.path, 
+                message: err.message 
+            }))
+        });
+    }
+    next();
+}
+
 // route untuk login pake github
 app.get('/github', 
     passport.authenticate('github', { 
@@ -95,7 +114,7 @@ app.get('/github/callback',
         const { accessToken, refreshToken } = generateTokens(req.user);
         
         res.json({
-            status: "Success",
+            status: "success",
             access_token: accessToken,
             refresh_token: refreshToken
         });
@@ -121,36 +140,52 @@ app.post('/refresh-token', (req, res) => {
 });
 
 // route buat register 
-app.post('/register', (req, res) => {
+app.post('/register', [
+    body('username').isLength({ min: 5 }).withMessage('Username minimal 5 karakter'),
+    body('email').isEmail().withMessage('Format email tidak valid'),
+    body('password').isLength({ min: 8 }).withMessage('Password minimal 8 karakter'),
+    validate 
+], (req, res) => {
     const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-        return res.status(400).json({ message: "Semua field harus diisi" });
-    }
-
     const hashedPassword = bcrypt.hashSync(password, 10);
-     const query = "INSERT INTO users (username, email, password, oauth_provider) VALUES (?, ?, ?, 'local')";
-        
+
+    const query = "INSERT INTO users (username, email, password, oauth_provider) VALUES (?, ?, ?, 'local')";    
     db.query(query, [username, email, hashedPassword], (err, result) => {
-        if (err) return res.status(500).json({ message: "Email atau username sudah ada" });
+        if (err) return res.status(500).json({ 
+            status: "error",
+            message: "Gagal mendaftar. Email atau username mungkin sudah digunakan" 
+        });
        
-        res.status(201).json({ message: "Berhasil mendaftar" });
+        res.status(201).json({ 
+            status: "success",
+            message: "Berhasil mendaftarkan akun" 
+        });
     });
 });
 
 // route buat login
-app.post('/login', (req, res) => {
+app.post('/login', [
+    body('email').isEmail().withMessage('Format email tidak valid'),
+    body('password').notEmpty().withMessage('Password tidak boleh kosong'),
+    validate 
+], (req, res) => {
     const { email, password } = req.body;
 
     const query = "SELECT * FROM users WHERE email = ?";
     db.query(query, [email], async (err, results) => {
-        if (err || results.length === 0) return res.status(400).json({ message: "User tidak ditemukan" });
+        if (err || results.length === 0) return res.status(400).json({ 
+            status: "error",
+            message: "User tidak ditemukan di dalam database" 
+        });
 
         const user = results[0];
         
         // Cek apaka user oauth atau lokal
         if (user.oauth_provider !== 'local') {
-            return res.status(400).json({ message: "Silahkan login menggunakan OAuth GitHub" });
+            return res.status(400).json({ 
+                status: "error",
+                message: "Silahkan login menggunakan OAuth GitHub" 
+            });
         }
 
         // banding password input dengan hash di db
@@ -161,7 +196,10 @@ app.post('/login', (req, res) => {
                 ...tokens
             });
         } else {
-            res.status(401).json({ message: "Password salah" });
+            res.status(401).json({ 
+                status: "error",
+                message: "Passwordnya salah, silakan coba lagi" 
+            });
         }
     });
 });
@@ -173,14 +211,23 @@ app.post('/logout', (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: "Token tidak ditemukan" });
+        return res.status(401).json({ 
+            status: "error",
+            message: "Token tidak ditemukan, silakan masukkan token yang sudah diberikan" 
+        });
     }
 
     const query = "INSERT INTO token_blacklist (token) VALUES (?)";
     db.query(query, [token], (err, result) => {
-        if (err) return res.status(500).json({ message: "Gagal logout" });
+        if (err) return res.status(500).json({ 
+            status: "error",
+            message: "Gagal logout karena server terganggu, silakan coba lagi" 
+        });
 
-        res.json({ message: "Logout berhasil, dan token telah di blacklist" });
+        res.json({ 
+            status: "error",
+            message: "Logout berhasil, dan token telah di blacklist" 
+        });
     });
 });
 
@@ -190,12 +237,16 @@ app.get('/profile', (req, res) => {
     const userData = req.headers['x-user-data'];
 
     if (!userData) {
-        return res.status(401).json({ message: "Data user tidak diteruskan oleh Gateway" });
+        return res.status(401).json({ 
+            status: "error",
+            message: "Data user tidak diteruskan oleh Gateway" 
+        });
     }
 
     res.json({
-            message: "Anda berhasil login dengan JWT",
-            user: JSON.parse(userData)
+        status: "success",
+        message: "Anda berhasil login dengan JWT",
+        user: JSON.parse(userData)
     });
 });
 
@@ -209,7 +260,10 @@ passport.deserializeUser((id, done) => {
 
 // respons buat test API
 app.get('/', (req, res) => {
-    res.json({ message: 'Response dari Service Auth' });
+    res.json({ 
+        status: "success",
+        message: 'Response dari Service Auth (test API)' 
+    });
 });
 
 app.listen(process.env.PORT, () => {

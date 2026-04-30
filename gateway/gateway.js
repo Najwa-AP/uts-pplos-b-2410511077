@@ -21,8 +21,9 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     message: {
-        status: 429,
-        message: "Terlalu banyak request, silakan coba lagi nanti"}
+        status: "error",
+        message: "Terlalu banyak request, silakan coba lagi nanti"
+    }
 });
 
 app.use(limiter);
@@ -51,21 +52,33 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: "Token JWT tidak ditemukan" });
+        return res.status(401).json({ 
+            status: "error",
+            message: "Token JWT tidak ditemukan" 
+        });
     }
 
     const checkBlacklist = "SELECT * FROM token_blacklist WHERE token = ?";
     db.query(checkBlacklist, [token], (err, results) => {
-        if  (err) return res.status(500).json({ message: "Terjadi kesalahan, database error" });
+        if  (err) return res.status(500).json({ 
+            status: "error",
+            message: "Terjadi gangguan pada server, silakan coba lagi nanti"
+        });
     
         if (results.length > 0) {
-            return res.status(403).json({ message: "Token JWT sudah tidak berlaku lagi (sudah logout)" });
+            return res.status(403).json({ 
+                status: "error",
+                message: "Token JWT yang anda masukkan sudah tidak berlaku lagi" 
+            });
         }
 
         // verifikasi token pakai secret key
         jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
             if (err) {
-                return res.status(403).json({ message: "Token JWT yang anda beri tidak valid" });
+                return res.status(403).json({ 
+                    status: "error",
+                    message: "Token JWT yang anda beri tidak valid" 
+                });
             }
 
             // kirim data ke service lewat header tambahan

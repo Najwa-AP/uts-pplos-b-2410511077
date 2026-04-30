@@ -27,6 +27,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.4.1",
     "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
     "http-proxy-middleware": "^3.0.5",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.22.3",
