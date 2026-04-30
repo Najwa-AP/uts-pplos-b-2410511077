@@ -6,6 +6,7 @@ import { Strategy as GitHubStrategy } from 'passport-github2';
 import mysql from 'mysql2';
 import config from './config.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 const app = express();
 const port = config.port;
@@ -15,12 +16,12 @@ const db = mysql.createConnection(config.db);
 
 const generateTokens = (user) => {
     const accessToken = jwt.sign(
-        { id: user.id, username: user.username },
+        { id: user.id, username: user.username, email: user.email, photo: user.photo },
         process.env.JWT_ACCESS_SECRET,
         { expiresIn: '15m' }
     );
     const refreshToken = jwt.sign(
-        { id: user.id },
+        { id: user.id, username: user.username, email: user.email, photo: user.photo },
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: '7d' }
     );
@@ -80,11 +81,6 @@ passport.use(new GitHubStrategy({
     });        
 }));
 
-// respons buat test API/logout
-app.get('/', (req, res) => {
-    res.json({ message: 'Response dari Service Auth atau anda sudah logout' });
-});
-
 // route untuk login pake github
 app.get('/github', 
     passport.authenticate('github', { 
@@ -116,7 +112,7 @@ app.post('/refresh-token', (req, res) => {
 
         // buat access token baru
         const accessToken = jwt.sign(
-            { id: user.id, username: decoded.username },
+            { id: user.id, username: user.username },
             process.env.JWT_ACCESS_SECRET,
             { expiresIn: '15m' }
         );
@@ -124,11 +120,82 @@ app.post('/refresh-token', (req, res) => {
     });
 });
 
+// route buat register 
+app.post('/register', (req, res) => {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: "Semua field harus diisi" });
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
+     const query = "INSERT INTO users (username, email, password, oauth_provider) VALUES (?, ?, ?, 'local')";
+        
+    db.query(query, [username, email, hashedPassword], (err, result) => {
+        if (err) return res.status(500).json({ message: "Email atau username sudah ada" });
+       
+        res.status(201).json({ message: "Berhasil mendaftar" });
+    });
+});
+
+// route buat login
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+
+    const query = "SELECT * FROM users WHERE email = ?";
+    db.query(query, [email], async (err, results) => {
+        if (err || results.length === 0) return res.status(400).json({ message: "User tidak ditemukan" });
+
+        const user = results[0];
+        
+        // Cek apaka user oauth atau lokal
+        if (user.oauth_provider !== 'local') {
+            return res.status(400).json({ message: "Silahkan login menggunakan OAuth GitHub" });
+        }
+
+        // banding password input dengan hash di db
+        if (bcrypt.compareSync(password, user.password)) {
+            const tokens = generateTokens(user);
+            res.json({
+                message: "Login Berhasil",
+                ...tokens
+            });
+        } else {
+            res.status(401).json({ message: "Password salah" });
+        }
+    });
+});
+
 // route buat lihat hasil login
-app.get('/profile', authenticateToken, (req, res) => {
+app.get('/profile', (req, res) => {
+    // Ambil data user dari header yang dikirim gateway
+    const userData = req.headers['x-user-data'];
+
+    if (!userData) {
+        return res.status(401).json({ message: "Data user tidak diteruskan oleh Gateway" });
+    }
+
     res.json({
             message: "Anda berhasil login dengan JWT",
-            user: req.user
+            user: JSON.parse(userData)
+    });
+});
+
+// route buat logout
+app.post('/logout', (req, res, next) => {
+    // ambil header authorization
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: "Token tidak ditemukan" });
+    }
+
+    const query = "INSERT INTO token_blacklist (token) VALUES (?)";
+    db.query(query, [token], (err, result) => {
+        if (err) return res.status(500).json({ message: "Gagal logout" });
+
+        res.json({ message: "Logout berhasil, dan token telah di blacklist" });
     });
 });
 
@@ -140,12 +207,9 @@ passport.deserializeUser((id, done) => {
     });
 });
 
-// route logout dan (hapus session user) <= pengennya ini juga bisa
-app.get('/logout', (req, res, next) => {
-    req.logout((err) => {
-        if (err) return next(err);
-        res.redirect('/');
-    });
+// respons buat test API
+app.get('/', (req, res) => {
+    res.json({ message: 'Response dari Service Auth' });
 });
 
 app.listen(process.env.PORT, () => {
