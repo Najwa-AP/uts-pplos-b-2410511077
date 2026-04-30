@@ -34,27 +34,6 @@ db.connect((err) => {
     console.log("Berhasil terhubung ke db_auth");
 });
 
-// middleware jwt
-const authenticateToken = (req, res, next) => {
-    // ambil header authorization
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ message: "Token tidak ditemukan" });
-    }
-
-    // verifikasi token pakai secret key
-    jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ message: "Token tidak valid" });
-        }
-
-        req.user = user;
-        next();
-    });
-}
-
 app.use(session ({
     secret: config.sessionSecret,
     resave: false,
