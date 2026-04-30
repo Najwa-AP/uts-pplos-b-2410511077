@@ -166,21 +166,6 @@ app.post('/login', (req, res) => {
     });
 });
 
-// route buat lihat hasil login
-app.get('/profile', (req, res) => {
-    // Ambil data user dari header yang dikirim gateway
-    const userData = req.headers['x-user-data'];
-
-    if (!userData) {
-        return res.status(401).json({ message: "Data user tidak diteruskan oleh Gateway" });
-    }
-
-    res.json({
-            message: "Anda berhasil login dengan JWT",
-            user: JSON.parse(userData)
-    });
-});
-
 // route buat logout
 app.post('/logout', (req, res, next) => {
     // ambil header authorization
@@ -196,6 +181,21 @@ app.post('/logout', (req, res, next) => {
         if (err) return res.status(500).json({ message: "Gagal logout" });
 
         res.json({ message: "Logout berhasil, dan token telah di blacklist" });
+    });
+});
+
+// route buat lihat hasil login
+app.get('/profile', (req, res) => {
+    // Ambil data user dari header yang dikirim gateway
+    const userData = req.headers['x-user-data'];
+
+    if (!userData) {
+        return res.status(401).json({ message: "Data user tidak diteruskan oleh Gateway" });
+    }
+
+    res.json({
+            message: "Anda berhasil login dengan JWT",
+            user: JSON.parse(userData)
     });
 });
 
