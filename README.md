@@ -9,43 +9,29 @@ NIM: 2410511077
 Kelas: SE-B
 
 ## Deskripsi Layanan
-Proyek ini membuat **layanan Sistem Pengaduan Mahasiswa** yang berisi Pengaduan kategori akademik/non-akademik, Alur disposisi ke unit terkait, Status follow-up, dan Rating kepuasan. Proyek ini terdiri dari 2 service yang menggunakan teknologi berbeda:
+Proyek ini membuat **layanan Sistem Pengaduan Mahasiswa** yang berisi Pengaduan kategori akademik/non-akademik, Alur disposisi ke unit terkait, Status follow-up, dan Rating kepuasan. Proyek ini terdiri dari 3 service:
 
-- **Service 2 (Node.js - Express)**  
-  
-- **Service 3 (PHP Native)**  
-
-## Daftar Endpoint
-### Service1
-#### GET 
-#### POST 
-#### PUT 
-#### DELETE
-
-### Service2
-#### GET 
-#### POST 
-#### PUT 
-#### DELETE
+- **auth-service (Javascript)**  
+- **complaints (PHP Native)**
+- **logs (Javascript)**  
 
 ## Cara Menjalankan
-### 1. Jalankan Service 1 (Node.js)
+### 1. Jalankan Auth-service & Logs
 Masuk ke folder utama project, lalu jalankan:
 
 `npm install`
 
-Perintah ini akan menginstall dependency seperti:
-- express
-- http-proxy-middleware
+Perintah ini akan menginstall dependencies yang dibutuhkan. Setelah itu jalankan di terminal:
 
-Setelah itu jalankan di terminal:
-`node service1`
+`node auth`
 
-### 2. Jalankan Service 2 (PHP Native)
+`node logs`
+
+### 2. Jalankan Complaints
 Pastikan PHP sudah terinstall dengan menjalankan:
 
 `php -v`
 
 Lalu jalankan di terminal:
 
-`node service2`
+`node complaints`

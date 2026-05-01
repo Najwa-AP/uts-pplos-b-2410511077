@@ -1,13 +1,16 @@
+import 'dotenv/config'; 
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import rateLimit from 'express-rate-limit';
-import 'dotenv/config';
 import config from './config.js'
 import mysql from 'mysql2';
 
 const app = express();
 const port = 4000;
+
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 
 // inisialisasi koneksi ke database
 const db = mysql.createConnection(config.db);
@@ -30,16 +33,24 @@ app.use(limiter);
 
 // --- PUBLIC ROUTE (Tanpa JWT) ---
 app.use('/auth', (req, res, next) => {
-    // Daftar path yang lewat tanpa token
+    // daftar path yang lewat tanpa token
     const publicPaths = ['/github', '/github/callback', '/refresh-token', '/register', '/login', '/logout'];
     
-    // Cek apakah request path ada di daftar 
+    // cek apakah request path ada di daftar 
     const pathWithoutAuth = req.path; 
     if (publicPaths.includes(pathWithoutAuth)) {
         return createProxyMiddleware({
             target: 'http://localhost:4001',
             changeOrigin: true,
             pathRewrite: { '^/auth': '' },
+            onProxyReq: (proxyReq, req, res) => {
+                if (req.body && Object.keys(req.body).length) {
+                    const bodyData = JSON.stringify(req.body);
+                    proxyReq.setHeader('Content-Type', 'application/json');
+                    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    proxyReq.write(bodyData);
+                }
+            }
         })(req, res, next);
     }
     next();
@@ -75,9 +86,11 @@ const authenticateToken = (req, res, next) => {
         // verifikasi token pakai secret key
         jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
             if (err) {
+                console.log("JWT Verify Error:", err.message);
                 return res.status(403).json({ 
                     status: "error",
-                    message: "Token JWT yang anda beri tidak valid" 
+                    message: "Token JWT yang anda beri tidak valid",
+                    debug: err.message
                 });
             }
 
@@ -92,7 +105,7 @@ const authenticateToken = (req, res, next) => {
     });
 }
 
-// --- PROTECTED ROUTE (Wajib JWT) ---
+// --- PROTECTED ROUTE (ada JWT) ---
 // API gateway arahin request ke /auth/profile
 app.get('/auth/profile', authenticateToken, createProxyMiddleware({
     target: 'http://localhost:4001',
@@ -106,9 +119,10 @@ app.get('/auth/profile', authenticateToken, createProxyMiddleware({
 }));
 
 // API gateway arahin request ke service2 
-app.use('/complaints', authenticateToken, createProxyMiddleware ({
-    target: 'http://localhost:4002',
-    changeOrigin: true
+app.use('/complaints', authenticateToken, createProxyMiddleware({
+    target: 'http://localhost:4002', 
+    changeOrigin: true,
+    ignorePath: true, // biar path /complaints gk diterusin ke PHP
 }));
 
 // API gateway arahin request service3
@@ -119,6 +133,8 @@ app.use('/logs', authenticateToken, createProxyMiddleware ({
         '^/logs': '',
     },
 }));
+
+console.log("Secret Key yang terbaca:", process.env.JWT_ACCESS_SECRET);
 
 // port
 app.listen(port, () => {

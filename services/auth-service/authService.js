@@ -12,17 +12,20 @@ import { body, validationResult } from 'express-validator';
 const app = express();
 const port = config.port;
 
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+
 // inisialisasi koneksi ke database
 const db = mysql.createConnection(config.db);
 
 const generateTokens = (user) => {
     const accessToken = jwt.sign(
-        { id: user.id, username: user.username, email: user.email, photo: user.photo },
+        { id: user.id, username: user.username, email: user.email, photo: user.profile_pic },
         process.env.JWT_ACCESS_SECRET,
         { expiresIn: '15m' }
     );
     const refreshToken = jwt.sign(
-        { id: user.id, username: user.username, email: user.email, photo: user.photo },
+        { id: user.id, username: user.username, email: user.email },
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: '7d' }
     );
@@ -93,7 +96,7 @@ const validate = (req, res, next) => {
             message: "Validasi gagal",
             errors: errors.array().map(err => ({ 
                 field: err.path, 
-                message: err.message 
+                message: err.msg 
             }))
         });
     }
@@ -172,7 +175,7 @@ app.post('/login', [
     const { email, password } = req.body;
 
     const query = "SELECT * FROM users WHERE email = ?";
-    db.query(query, [email], async (err, results) => {
+    db.query(query, [email], (err, results) => {
         if (err || results.length === 0) return res.status(400).json({ 
             status: "error",
             message: "User tidak ditemukan di dalam database" 
@@ -225,7 +228,7 @@ app.post('/logout', (req, res, next) => {
         });
 
         res.json({ 
-            status: "error",
+            status: "success",
             message: "Logout berhasil, dan token telah di blacklist" 
         });
     });
@@ -266,6 +269,6 @@ app.get('/', (req, res) => {
     });
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(port, () => {
     console.log(`Service Auth sedang berjalan dari port ${port}`);
 });
