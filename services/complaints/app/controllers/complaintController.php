@@ -45,16 +45,52 @@
 
             // input user_id dari gateway
             $input['user_id'] = $this->userData['id'];
-
             $id = $this->model->create($input);
             
             if ($id) {
-                // buat logging
-                echo json_encode([
-                    "status" => "success", 
-                    "message" => "Pengaduan berhasil dibuat",
-                    "complaint_id" => $id
-                ]);
+            // buat Kirim ke Service Logs ---
+            $this->sendToLog([
+                "complaint_id" => $id,
+                "user_id"      => $this->userData['id'],
+                "action" => "CREATED",
+                "description" => "User " . $this->userData['username'] . " membuat pengaduan baru."
+            ]);
+
+            echo json_encode([
+                "status" => "success", 
+                "message" => "Pengaduan berhasil dibuat"
+            ]);
             }
         }
+
+        public function rate() {
+            $input = json_decode(file_get_contents("php://input"), true);
+            
+            // cek dlu status komplainnya (harus "Resolved")
+            $complaint = $this->model->getById($input['complaint_id']);
+            if ($complaint['status'] !== 'Resolved') {
+                echo json_encode([
+                    "status" => "error", 
+                    "message" => "Hanya bisa memberi rating jika sudah 'Resolved'"
+                ]);
+                return;
+            }
+
+            $this->model->addRating($input['complaint_id'], $input['score'], $input['feedback']);
+            echo json_encode([
+                "status" => "success", 
+                "message" => "Terima kasih atas penilaian anda!"
+            ]);
+        }
+
+        // interservice (kirim data ke db_logs(service 3))
+        private function sendToLog($data) {
+        $url = "http://localhost:4003/logs"; // langsung ke port Service Logs
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type:application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_exec($ch);
+        curl_close($ch);
+}
 }
