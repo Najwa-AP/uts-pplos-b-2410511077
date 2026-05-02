@@ -65,5 +65,33 @@
             }
             return false;
         }
+
+        // ambil berdasarkan id
+        public function getById($id) {
+            $query = "SELECT c.*, u.nama_unit, r.score as rating_skor, r.feedback as rating_feedback
+              FROM " . $this->table_name . " c 
+              LEFT JOIN units u ON c.unit_id = u.id 
+              LEFT JOIN ratings r ON c.id = r.complaint_id
+              WHERE c.id = :id LIMIT 1";
+              
+            $result = $this->conn->prepare($query);
+            $result->bindParam(':id', $id);
+            $result->execute();
+            
+            return $result->fetch(PDO::FETCH_ASSOC);
+        }
+
+        // buat nambah rating
+        public function addRating($complaint_id, $score, $feedback) {
+            $query = "INSERT INTO ratings (complaint_id, score, feedback) 
+                    VALUES (:complaint_id, :score, :feedback)";
+            
+            $result = $this->conn->prepare($query);
+            return $result->execute([
+                ':complaint_id' => $complaint_id,
+                ':score'        => $score,
+                ':feedback'     => $feedback
+            ]);
+        }
     }
 ?>

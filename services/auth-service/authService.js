@@ -127,10 +127,16 @@ app.get('/github/callback',
 // route buat refresh token
 app.post('/refresh-token', (req, res) => { 
     const { token } = req.body;
-    if (!token) return res.sendStatus(401);
+    if (!token) return res.status(401).json({
+        status: "error",
+        message: "Gagal refresh token. Token tidak ditemukan",
+    });
 
     jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
+        if (err) return res.status(403).json({
+            status: "error",
+            message: "Sesi login telah berakhir. Silakan login kembali",
+        });
 
         // buat access token baru
         const accessToken = jwt.sign(
@@ -138,7 +144,11 @@ app.post('/refresh-token', (req, res) => {
             process.env.JWT_ACCESS_SECRET,
             { expiresIn: '15m' }
         );
-        res.json({ access_token: accessToken });
+        res.status(200).json({ 
+            status: "success",
+            message: "Berhasil merefresh token!",
+            access_token: accessToken 
+        });
     });
 });
 

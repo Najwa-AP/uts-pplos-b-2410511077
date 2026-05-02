@@ -14,6 +14,7 @@
 
     // ambil URL & method
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $uri = str_replace('/index.php', '', $uri);
     $method = $_SERVER['REQUEST_METHOD'];
     
     // --- ROUTE SERVICE COMPLAINT ---
@@ -22,20 +23,24 @@
             $controller->list();
         } elseif ($method == 'POST') {
             $controller->create();
+        } elseif ($method == 'DELETE') {
+            $controller->destroy();
         } else {
             http_response_code(405);
             echo json_encode([
                 "status" => "error", 
-                "message" => "Method yang anda gunakan tidak dibolehkan, silahkan pakai method lain"]);
+                "message" => "Method yang anda gunakan tidak dibolehkan, silahkan pakai method lain"
+            ]);
         }
+    } elseif ($uri == '/view' && $method == 'GET') {
+        $controller->view();
     } elseif ($uri == '/rate' && $method == 'POST') {
         $controller->rate();
-    } elseif ($uri == '/' && $method == 'DELETE') {
-        $controller->destroy();
-    }  else {
+    } else {
         http_response_code(404);
         echo json_encode([
             "status" => "error", 
-            "message" => "Endpoint tidak ditemukan, silakan ketik endpoint yang benar"]);
+            "message" => "Endpoint tidak ditemukan, silakan ketik endpoint yang benar"
+        ]);
     }
 ?>

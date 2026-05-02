@@ -12,7 +12,7 @@
         }
 
         public function list() {
-            // ambil parameter paging & filtering dari $_GET
+            // ambil parameter paging & filtering dari
             $page = $_GET['page'] ?? 1;
             $per_page = $_GET['per_page'] ?? 10;
             $unit_id = $_GET['unit_id'] ?? null;
@@ -49,18 +49,24 @@
             $id = $this->model->create($input);
             
             if ($id) {
-            // buat Kirim ke Service Logs ---
-            $this->sendToLog([
-                "complaint_id" => $id,
-                "user_id"      => $this->userData['id'],
-                "action" => "CREATED",
-                "description" => "User " . $this->userData['username'] . " membuat pengaduan baru."
-            ]);
+                // buat Kirim ke Service Logs ---
+                $this->sendToLog([
+                    "complaint_id" => $id,
+                    "action" => "CREATED",
+                    "description" => "User " . $this->userData['username'] . " membuat pengaduan baru."
+                ]);
 
-            echo json_encode([
-                "status" => "success", 
-                "message" => "Pengaduan berhasil dibuat"
-            ]);
+                http_response_code(201);
+                echo json_encode([
+                    "status" => "success", 
+                    "message" => "Pengaduan berhasil dibuat"
+                ]);
+            } else {
+                http_response_code(500);
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "Gagal menyimpan pengaduan ke database"
+                ]);
             }
         }
 
@@ -68,9 +74,28 @@
         public function rate() {
             $input = json_decode(file_get_contents("php://input"), true);
             
-            // cek dlu status komplainnya (harus "Resolved")
+            if (empty($input['complaint_id']) || empty($input['score'])) {
+                http_response_code(400);
+                echo json_encode([
+                    "status" => "error", 
+                    "message" => "Id pengaduan & skor rating wajib diisi"
+                ]);
+                return;
+            }
+
             $complaint = $this->model->getById($input['complaint_id']);
+            
+            if (!$complaint) {
+                http_response_code(404);
+                echo json_encode([
+                    "status" => "error", 
+                    "message" => "Pengaduan tidak ditemukan"
+                ]);
+                return;
+            }
+
             if ($complaint['status'] !== 'Resolved') {
+                http_response_code(400);
                 echo json_encode([
                     "status" => "error", 
                     "message" => "Hanya bisa memberi rating jika sudah 'Resolved'"
@@ -79,10 +104,40 @@
             }
 
             $this->model->addRating($input['complaint_id'], $input['score'], $input['feedback']);
+            
             echo json_encode([
                 "status" => "success", 
                 "message" => "Terima kasih atas penilaian anda!"
             ]);
+        }
+
+        public function view() {
+            // Ambil id dari query string ?id=
+            $id = $_GET['id'] ?? null;
+
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "Id pengaduan harus disertakan"
+                ]);
+                return;
+            }
+
+            $result = $this->model->getById($id);
+
+            if ($result) {
+                echo json_encode([
+                    "status" => "success",
+                    "data" => $result
+                ]);
+            } else {
+                http_response_code(404);
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "Pengaduan tidak ditemukan, silakan masukkan id yang benar"
+                ]);
+            }
         }
 
         // buat hapus complaint
@@ -101,15 +156,11 @@
 
             if ($this->model->delete($id)) {
                 http_response_code(204); 
-                echo json_encode([
-                    "status" => "error", 
-                    "message" => "Complaint tidak ditemukan, silakan dicoba lagi"
-                ]);
             } else {
                 http_response_code(404);
                 echo json_encode([
                     "status" => "error", 
-                    "message" => "Gagal menghapus complaint, silakan dicoba lagi"
+                    "message" => "Gagal menghapus complaint atau ID tidak ada, silakan dicoba lagi"
                 ]);
             }
         }

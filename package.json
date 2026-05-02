@@ -8,10 +8,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "auth": "node services/auth-service/authService.js",
-    "complaints": "PHP -S localhost:4002",
-    "logs": "node services/logs/log.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
