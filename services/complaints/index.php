@@ -30,7 +30,9 @@
         }
     } elseif ($uri == '/rate' && $method == 'POST') {
         $controller->rate();
-    } else {
+    } elseif ($uri == '/' && $method == 'DELETE') {
+        $controller->destroy();
+    }  else {
         http_response_code(404);
         echo json_encode([
             "status" => "error", 

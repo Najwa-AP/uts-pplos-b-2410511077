@@ -29,6 +29,7 @@
             ]);
         }
 
+        // buat bikin complaint
         public function create() {
             // ambil body request json
             $input = json_decode(file_get_contents("php://input"), true);
@@ -63,6 +64,7 @@
             }
         }
 
+        // buat input rating complaint
         public function rate() {
             $input = json_decode(file_get_contents("php://input"), true);
             
@@ -83,6 +85,35 @@
             ]);
         }
 
+        // buat hapus complaint
+        public function destroy() {
+            // ambil id dari query string
+            $id = $_GET['id'] ?? null;
+
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode([
+                    "status" => "error", 
+                    "message" => "ID tidak disertakan"
+                ]);
+                return;
+            }
+
+            if ($this->model->delete($id)) {
+                http_response_code(204); 
+                echo json_encode([
+                    "status" => "error", 
+                    "message" => "Complaint tidak ditemukan, silakan dicoba lagi"
+                ]);
+            } else {
+                http_response_code(404);
+                echo json_encode([
+                    "status" => "error", 
+                    "message" => "Gagal menghapus complaint, silakan dicoba lagi"
+                ]);
+            }
+        }
+
         // interservice (kirim data ke db_logs(service 3))
         private function sendToLog($data) {
         $url = "http://localhost:4003/logs"; // langsung ke port Service Logs
@@ -92,5 +123,5 @@
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_exec($ch);
         curl_close($ch);
-}
+        }
 }
