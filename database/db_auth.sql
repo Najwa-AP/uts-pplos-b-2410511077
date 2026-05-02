@@ -25,7 +25,9 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `users` (`id`, `nama`, `username`, `email`, `password`, `role`, `github_id`, `profile_pic`, `created_at`, `oauth_provider`) VALUES
-(1, 'Najwa-AP', 'Najwa-AP', 'Najwa-AP@github.com', '', 'Mahasiswa', '194593121', 'https://avatars.githubusercontent.com/u/194593121?v=4', '2026-04-29 11:52:06', 'github');
+(1, 'Najwa-AP', 'Najwa-AP', 'Najwa-AP@github.com', '', 'Mahasiswa', '194593121', 'https://avatars.githubusercontent.com/u/194593121?v=4', '2026-04-29 04:52:06', 'github'),
+(2, '', 'nanaz_goreng', 'naz@upnvj.ac.id', '$2b$10$JH0I4p50KJIBOeSPo.p3P.TzE3G7YN8OYpbAw1r1eH3umUieVDI.2', 'Mahasiswa', NULL, NULL, '2026-05-02 03:06:54', 'local'),
+(6, '', 'Najwa_zahra', 'najwa@upnvj.ac.id', '$2b$10$AVzjQL4IvaNrufyEz3uqN.w.rSpY4zj4/ZrrqtllebWA1IJqS3NSC', 'Mahasiswa', NULL, NULL, '2026-05-02 07:45:01', 'local');
 
 ALTER TABLE `token_blacklist`
   ADD PRIMARY KEY (`id`),
@@ -39,8 +41,8 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `github_id` (`github_id`);
 
 ALTER TABLE `token_blacklist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 COMMIT;
