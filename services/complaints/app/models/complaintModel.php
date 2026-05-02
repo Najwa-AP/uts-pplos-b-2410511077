@@ -11,7 +11,7 @@
         public function getAll($page, $per_page, $unit_id = null, $status = null) {
             $offset = ($page -1) * $per_page;
 
-            // Query SQL dengan JOIN ke tabel units dan ratings (opsional) (gk tau mesti pake apa gk)
+            // join ke tabel units dan ratings biar gk nampilin idnya doang
             $query = "SELECT c.*, u.nama_unit, r.score as rating_skor 
                   FROM " . $this->table_name . " c 
                   LEFT JOIN units u ON c.unit_id = u.id 
@@ -52,6 +52,18 @@
                 ':description' => $data['description']
             ]);
             return $this->conn->lastInsertId();
+        }
+
+        // buat hapus complaint
+        public function delete($id) {
+            $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
+            $result = $this->conn->prepare($query);
+            $result->bindParam(':id', $id);
+            
+            if ($result->execute()) {
+                return true;
+            }
+            return false;
         }
     }
 ?>
