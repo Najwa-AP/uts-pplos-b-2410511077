@@ -8,22 +8,219 @@
   },
   "item": [
     {
-      "name": "http://localhost:4000/auth",
+      "name": "http://localhost:4000/auth/github",
       "request": {
-        "auth": {
-          "type": "noauth"
-        },
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:4000/auth",
+          "raw": "http://localhost:4000/auth/github",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "4000",
           "path": [
-            "auth"
+            "auth",
+            "github"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/auth/profile",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJOYWp3YS1BUCIsImVtYWlsIjoiTmFqd2EtQVBAZ2l0aHViLmNvbSIsInBob3RvIjoiaHR0cHM6Ly9hdmF0YXJzLmdpdGh1YnVzZXJjb250ZW50LmNvbS91LzE5NDU5MzEyMT92PTQiLCJpYXQiOjE3Nzc2ODY4NDYsImV4cCI6MTc3NzY4Nzc0Nn0.AKPt4YwFWoFL8GuCq4MzVg3_XEXeJVUzFMYmKD5tt1k",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:4000/auth/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "auth",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/auth/refresh-token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJOYWp3YS1BUCIsImVtYWlsIjoiTmFqd2EtQVBAZ2l0aHViLmNvbSIsImlhdCI6MTc3NzY4Njg0NiwiZXhwIjoxNzc4MjkxNjQ2fQ.SAdzxY-lQT8kGCmqFBWDXp_NGQK0iIVvyE37hyPa-yU\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/auth/refresh-token",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "auth",
+            "refresh-token"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/auth/logout",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJOYWp3YS1BUCIsImlhdCI6MTc3NzY5MDQ0OCwiZXhwIjoxNzc3NjkxMzQ4fQ.27dOH3dTSaS6sOUHQKMCnqRO4NLZJd8uowRhDJCXvSw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/auth/logout",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "auth",
+            "logout"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/auth/register",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"nanaz_goreng\",\r\n    \"email\": \"naz@upnvj.ac.id\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/auth/login",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"naz@upnvj.ac.id\",\r\n    \"password\": \"passwordbena\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/complaints?page=1&per_page=2&status=Pending",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJuYW5hel9nb3JlbmciLCJpYXQiOjE3Nzc2OTMwMjksImV4cCI6MTc3NzY5MzkyOX0.3lzpF3kr2xa73y_VmeMFibgRA0WBdVCx8X0q-zEVhz0",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:4000/complaints?page=1&per_page=2&status=Pending",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "complaints"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "per_page",
+              "value": "2"
+            },
+            {
+              "key": "status",
+              "value": "Pending"
+            }
           ]
         }
       },
@@ -33,10 +230,26 @@
       "name": "http://localhost:4000/complaints",
       "request": {
         "auth": {
-          "type": "noauth"
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJuYW5hel9nb3JlbmciLCJpYXQiOjE3Nzc2OTQwMTgsImV4cCI6MTc3NzY5NDkxOH0.3Nu2szijq4fhCM7WzYnlH5bMkPsk_Vr0PWpOpkyG9nM",
+              "type": "string"
+            }
+          ]
         },
-        "method": "GET",
+        "method": "POST",
         "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"Lampu Kelas Mati\",\r\n    \"description\": \"Lampu di ruang kuliah 403 berkedip dan mengganggu saat UTS.\",\r\n    \"unit_id\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
         "url": {
           "raw": "http://localhost:4000/complaints",
           "protocol": "http",
@@ -46,6 +259,156 @@
           "port": "4000",
           "path": [
             "complaints"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/complaints/rate",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJuYW5hel9nb3JlbmciLCJpYXQiOjE3Nzc2OTczMTcsImV4cCI6MTc3NzY5ODIxN30.SSr28BNDX7urE2WnEXE-3fOOJOLQ0IkPCPaA6JMRePE",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"complaint_id\": 6, \r\n    \"score\": 5,\r\n    \"feedback\": \"Terima kasih, TV nya sudah bisa dipakai lagi.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/complaints/rate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "complaints",
+            "rate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/complaints/view?id={id}",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJuYW5hel9nb3JlbmciLCJpYXQiOjE3Nzc2OTgyOTUsImV4cCI6MTc3NzY5OTE5NX0.aKow5jOOVgtTcZyLFxAvl_KZOfYFDdVEkI5sSb5naQg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:4000/complaints/view?id=11",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "complaints",
+            "view"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "11"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/logs",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJuYW5hel9nb3JlbmciLCJpYXQiOjE3Nzc3MDAyMDAsImV4cCI6MTc3NzcwMTEwMH0.5RYmUwXKhvgt5DjTYzNHrFaX2jvDkXd2hqFxLKo0IHQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"action\": \"CREATED\",\r\n    \"description\": \"Mhs_3 membuat pengaduan: Lampu Lab Mati.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/logs",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "logs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:4000/logs/{complaint_id}",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJuYW5hel9nb3JlbmciLCJpYXQiOjE3Nzc3MDExMTYsImV4cCI6MTc3NzcwMjAxNn0.COoJbJUspyQ0Ro-M02f7JoUQ6MIZXQAON6Ny_UHhurA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"action\": \"CREATED\",\r\n    \"description\": \"Mhs_3 membuat pengaduan: Lampu Lab Mati.\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4000/logs/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "logs",
+            "1"
           ]
         }
       },
